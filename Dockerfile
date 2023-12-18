@@ -4,7 +4,7 @@ FROM debian
 
 RUN addgroup --gid ${GID:-1000} minio \
   && adduser --gid ${GID:-1000} --uid ${UID:-1000} --home=/app minio \
-  && RUN chown -R minio:minio /app
+  && chown -R minio:minio /app
 
 COPY --from=minio-bin /usr/bin/minio /app/minio
 
