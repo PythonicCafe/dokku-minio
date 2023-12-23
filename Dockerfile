@@ -1,14 +1,14 @@
-FROM minio/minio:latest
+FROM minio/minio:latest AS minio-bin
 
-# Add user dokku with an individual UID
-RUN adduser -u 32769 -m -U dokku
-USER dokku
+FROM debian
 
-# Create data directory for the user, where we will keep the data
-RUN mkdir -p /home/dokku/data
+RUN addgroup --gid ${GID:-1000} minio \
+  && adduser --gid ${GID:-1000} --uid ${UID:-1000} --home=/app minio \
+  && chown -R minio:minio /app
 
-# Add custom nginx.conf template for Dokku to use
-WORKDIR /app
-ADD nginx.conf.sigil .
+COPY --from=minio-bin /usr/bin/minio /app/minio
 
-CMD ["minio", "server", "/home/dokku/data", "--console-address", ":9001"]
+EXPOSE 9000
+EXPOSE 9001
+
+VOLUME ["/data"]
