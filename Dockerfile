@@ -1,11 +1,14 @@
-FROM minio/minio:latest
+FROM minio/minio:latest AS minio-bin
 
-# Add user dokku with an individual UID
-RUN adduser -D -u 32769 -g dokku dokku
-USER dokku
+FROM debian
 
-# Create data directory for the user, where we will keep the data
-RUN mkdir -p /home/dokku/data
+RUN addgroup --gid ${GID:-1000} minio \
+  && adduser --gid ${GID:-1000} --uid ${UID:-1000} --home=/app minio \
+  && chown -R minio:minio /app
 
-# Run the server and point to the created directory
-CMD ["server", "/home/dokku/data"]
+COPY --from=minio-bin /usr/bin/minio /app/minio
+
+EXPOSE 9000
+EXPOSE 9001
+
+VOLUME ["/data"]
